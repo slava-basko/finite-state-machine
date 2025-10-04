@@ -1,0 +1,35 @@
+{
+  "name": "slava-basko/finite-state-machine",
+  "type": "library",
+  "description": "",
+  "keywords": [
+    "Finite-state machine", "transition"
+  ],
+  "authors": [
+    {
+      "name": "Slava Basko",
+      "email": "basko.slava@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "require": {
+    "php": ">=5.5|^7|^8"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "4 - 9",
+    "squizlabs/php_codesniffer": ">=3"
+  },
+  "suggest": {
+    "slava-basko/specification-php": "Specification as guards in your transitions"
+  },
+  "autoload": {
+    "psr-4": {
+      "Basko\\FSM\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Basko\\FSMTest\\": "tests"
+    }
+  }
+}
