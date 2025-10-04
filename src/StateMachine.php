@@ -69,12 +69,14 @@ final class StateMachine implements StateMachineInterface
      */
     public function canTransition($transitionName, $subject)
     {
-        InvalidArgumentException::assertNonEmptyString($transitionName, __METHOD__, 1);
+        $currentSubjectState = $this->getSubjectState($subject);
 
-        $currentState = $this->getSubjectState($subject);
-        $transition = $this->getTransitionByName($transitionName);
+        $transition = $this->findTransition($transitionName, $currentSubjectState, $subject);
+        if (!$transition) {
+            return false;
+        }
 
-        return $transition->can($currentState, $subject);
+        return $transition->can($currentSubjectState, $subject);
     }
 
     /**
@@ -82,17 +84,17 @@ final class StateMachine implements StateMachineInterface
      */
     public function transition($transitionName, $subject)
     {
-        InvalidArgumentException::assertNonEmptyString($transitionName, __METHOD__, 1);
+        $currentSubjectState = $this->getSubjectState($subject);
 
-        $currentState = $this->getSubjectState($subject);
-        $transition = $this->getTransitionByName($transitionName);
-
-        if (!$transition->can($currentState, $subject)) {
-            throw NoSuitableTransitionException::create($transitionName, $currentState);
+        if (!$this->canTransition($transitionName, $subject)) {
+            throw NoSuitableTransitionException::create($transitionName, $currentSubjectState);
         }
 
+        $transition = $this->findTransition($transitionName, $currentSubjectState, $subject);
+        /** @var TransitionInterface<TSubject, TPayload> $transition */
         $newState = $transition->getToState();
-        \call_user_func($this->setter, $subject, $newState);
+
+        \call_user_func_array($this->setter, [$subject, $newState]);
 
         return $newState;
     }
@@ -114,15 +116,22 @@ final class StateMachine implements StateMachineInterface
 
     /**
      * @param non-empty-string $transitionName
-     * @return \Basko\FSM\TransitionInterface<TSubject, TPayload>
-     * @throws \Basko\FSM\Exception\NonExistentTransitionException
+     * @param \Basko\FSM\StateInterface<TPayload> $currentSubjectState
+     * @param TSubject $subject
+     * @return TransitionInterface<TSubject, TPayload>|null
+     * @throws \Basko\FSM\Exception\Exception
      */
-    private function getTransitionByName($transitionName)
+    private function findTransition($transitionName, StateInterface $currentSubjectState, $subject)
     {
         if (!isset($this->transitions[$transitionName])) {
             throw NonExistentTransitionException::create($transitionName);
         }
 
-        return $this->transitions[$transitionName];
+        $transition = $this->transitions[$transitionName];
+        if ($transition->can($currentSubjectState, $subject)) {
+            return $transition;
+        }
+
+        return null;
     }
 }
