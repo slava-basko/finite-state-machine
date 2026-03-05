@@ -43,7 +43,7 @@ final class Transition implements TransitionInterface
         InvalidArgumentException::assertNonEmptyString($name, __METHOD__, 1);
         InvalidArgumentException::assertListOfStates($from, __METHOD__, 2);
         if (!\is_null($guard)) {
-            InvalidArgumentException::assertCallable($guard, __METHOD__, 1);
+            InvalidArgumentException::assertCallable($guard, __METHOD__, 4);
         }
 
         $this->name = $name;
